@@ -1,172 +1,198 @@
 <template>
-  <div class="flex gap-4 flex-wrap mb-6 items-end">
-    <div class="flex-grow">
-      <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
-      <input
-        v-model="accountId"
-        type="text"
-        id="accountId"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+  <AppTabs :tabs="tabs" @selectActiveTab="selectActiveTab" />
+
+  <div v-show="activeTab === 'transfer'">
+    <p class="block mb-6 text-sm font-medium text-gray-600">
+      Handles transferring of HBARs and tokens between accounts. Also, it retrieves the current balance.
+    </p>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="receiver" class="block mb-2 text-sm font-medium text-gray-900">Receiver</label>
+        <input
+          v-model="receiver"
+          type="text"
+          id="receiver"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+      <div class="max-w-sm w-full">
+        <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+        <input
+          v-model="amount"
+          type="text"
+          id="amount"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
+        type="button"
+        @click="transferHbars()"
       >
+        Transfer Hbars
+      </button>
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit"
+        type="button"
+        @click="transferTokens()"
+      >
+        Transfer Tokens
+      </button>
     </div>
 
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="getBalance()"
-    >
-      Get Balance
-    </button>
   </div>
 
-  <div class="flex gap-4 mb-6 flex-wrap items-end">
-    <div class="flex-grow">
-      <label for="receiver" class="block mb-2 text-sm font-medium text-gray-900">Receiver</label>
-      <input
-        v-model="receiver"
-        type="text"
-        id="receiver"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+  <div v-show="activeTab === 'create'">
+    <p class="block mb-6 text-sm font-medium text-gray-600">
+      Allows the creation of new tokens, including fungible tokens and NFTs
+    </p>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="tokenName" class="block mb-2 text-sm font-medium text-gray-900">Token Name</label>
+        <input
+          v-model="tokenName"
+          type="text"
+          id="tokenName"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <div class="max-w-sm w-full">
+        <label for="tokenSymbol" class="block mb-2 text-sm font-medium text-gray-900">Token Symbol</label>
+        <input
+          v-model="tokenSymbol"
+          type="text"
+          id="tokenSymbol"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
+        type="button"
+        @click="createToken()"
       >
-    </div>
-    <div class="flex-grow">
-      <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">Amount</label>
-      <input
-        v-model="amount"
-        type="text"
-        id="amount"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-        :disabled="!store.state.isInit"
-      >
+        Create Token
+      </button>
     </div>
 
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="transferHbars()"
-    >
-      Transfer Hbars
-    </button>
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="transferTokens()"
-    >
-      Transfer Tokens
-    </button>
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="tokenId" class="block mb-2 text-sm font-medium text-gray-900">Token Id</label>
+        <input
+          v-model="tokenId"
+          type="text"
+          id="tokenId"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+    
+      <input
+        type="file"
+        name="uploadfile"
+        id="img"
+        style="display:none;"
+        accept="image/*"
+        @change="selectImage($event)"
+      />
+      <label
+        for="img"
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit"
+      >Select Image</label>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit || !isReadyToMint ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !isReadyToMint"
+        type="button"
+        @click="nftMint()"
+      >
+        NFT Mint
+      </button>
+    </div>
   </div>
 
-  <div class="flex gap-4 mb-6 items-end">
-    <div class="flex-grow">
-      <label for="tokenName" class="block mb-2 text-sm font-medium text-gray-900">Token Name</label>
-      <input
-        v-model="tokenName"
-        type="text"
-        id="tokenName"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+  <div v-show="activeTab === 'actions'">
+    <p class="block mb-6 text-sm font-medium text-gray-600">
+      Provides various token-related actions such as retrieving token information, associating tokens with accounts, and dropping tokens.
+    </p>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
+        <input
+          v-model="accountId"
+          type="text"
+          id="accountId"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
+        type="button"
+        @click="getBalance()"
       >
+        Get Balance
+      </button>
     </div>
 
-    <div class="flex-grow">
-      <label for="tokenSymbol" class="block mb-2 text-sm font-medium text-gray-900">Token Symbol</label>
-      <input
-        v-model="tokenSymbol"
-        type="text"
-        id="tokenSymbol"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
+        type="button"
+        @click="getTokenInfo()"
       >
-    </div>
+        Get Token Info
+      </button>
 
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="createToken()"
-    >
-      Create Token
-    </button>
-  </div>
-
-  <div class="flex gap-4 mb-6 items-end">
-    <div class="flex-grow">
-      <label for="tokenId" class="block mb-2 text-sm font-medium text-gray-900">Token Id</label>
-      <input
-        v-model="tokenId"
-        type="text"
-        id="tokenId"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-        :disabled="!store.state.isInit"
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit || !isMint ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !isMint"
+        type="button"
+        @click="associateToken()"
       >
+        Associate Token
+      </button>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit || !store.state.isAccount ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !store.state.isAccount"
+        type="button"
+        @click="dropTokens()"
+      >
+        Drop Tokens
+      </button>
     </div>
-   
-    <input type="file" name="uploadfile" id="img" style="display:none;"/>
-    <label
-      for="img"
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-    >Click me to upload image</label>
-
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="nftMint()"
-    >
-      NFT Mint
-    </button>
-  </div>
-
-
-
-  <div class="flex justify-end gap-4 flex-wrap">
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="getTokenInfo()"
-    >
-      Get Token Info
-    </button>
-
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit || !isMint ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit || !isMint"
-      type="button"
-      @click="associateToken()"
-    >
-      Associate Token
-    </button>
-
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      :class="!store.state.isInit || !store.state.isAccount ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit || !store.state.isAccount"
-      type="button"
-      @click="dropTokens()"
-    >
-      Drop Tokens
-    </button>
   </div>
 
   <AppOutput :data="output" :isLoading="progress" />
@@ -174,6 +200,7 @@
 
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
+  import AppTabs from '../components/AppTabs.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
@@ -185,8 +212,16 @@
 
   const bladeSDK = BladeService.getInstance()
 
+  const tabs = ref([
+    { name: 'Transfer', value: 'transfer' },
+    { name: 'Create', value: 'create' },
+    { name: 'Actions', value: 'actions' }
+  ])
+  const activeTab = ref(null)
+
   const output = ref(store.state.output)
   const progress = ref(false)
+  const isReadyToMint = ref(false)
   const isMint = ref(false)
 
   const accountId = ref(demoConfig.accountId)
@@ -200,6 +235,11 @@
   const nonce = ref(demoConfig.nonce)
   const amount = ref(1)
   const memo = ref('Test token transfer from WEB')
+  const base64Image = ref('')
+
+  const selectActiveTab = (value) => {
+    activeTab.value = value
+  }
 
   const getBalance = async () => {
     progress.value = true
@@ -267,6 +307,20 @@
     progress.value = false
   }
 
+  const selectImage = (event: any) => {
+    const file = event.target.files[0]
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+          base64Image.value = e.target.result
+          isReadyToMint.value = true
+      }
+
+      reader.readAsDataURL(file)
+    }
+  }
+
   const nftMint = async () => {
     // Need to finish it
     progress.value = true
@@ -279,13 +333,16 @@
       speed: 10
     }
 
+    console.log(base64Image.value);
+    
+
     // storageConfig = NFTStorageConfig(
     //     provider = NFTStorageProvider.nftStorage,
     //     apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZFNzY0ZmM0ZkZFOEJhNjdCNjc1NDk1Q2NEREFiYjk0NTE4Njk0QjYiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcwNDQ2NDUxODQ2MiwibmFtZSI6IkJsYWRlU0RLLXRlc3RrZXkifQ.t1wCiEuiTvcYOwssdZgiYaug4aF8ZrvMBdkTASojWGU"
     // ),
 
     try {
-      output.value = await bladeSDK.nftMint(accountId.value, privateKey.value, metaData)
+      output.value = await bladeSDK.nftMint(accountId.value, privateKey.value, base64Image.value, metaData)
 
       isMint.value = true
     } catch (error) {

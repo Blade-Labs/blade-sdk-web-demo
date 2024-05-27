@@ -1,10 +1,18 @@
 <template>
-  <div>
-    <p class="mb-4 text-lg font-semibold text-gray-900 bg-white">
+  <h1 class="mb-2 text-lg font-semibold text-gray-900 bg-white">
+    Welcome to Blade SDK demo app
+  </h1>
+
+  <p class="block mb-6 text-sm font-medium text-gray-600">
+    This section provides a brief introduction to the Blade SDK demo app, highlighting its purpose and key features.
+  </p>
+
+  <div class="block p-6 bg-white border border-gray-200 bg-gray-100 rounded-lg mb-6">
+    <p class="mb-4 text-lg font-semibold text-gray-900">
       Init Blade section
     </p>
 
-    <div class="flex gap-4 flex-wrap mb-6">
+    <div class="flex gap-4 flex-wrap">
       <div class="flex-grow">
         <label for="apiKey" class="block mb-2 text-sm font-medium text-gray-900">apiKey</label>
         <input
@@ -71,12 +79,12 @@
     </div>
   </div>
 
-  <div>
-    <p class="mb-4 text-lg font-semibold text-gray-900 bg-white">
+  <div class="block p-6 bg-white border border-gray-200 bg-gray-100 rounded-lg mb-6">
+    <p class="mb-4 text-lg font-semibold text-gray-900">
       Demo data section
     </p>
 
-    <div class="flex gap-4 flex-wrap mb-6">
+    <div class="flex gap-4 flex-wrap">
       <div class="flex-grow">
         <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
         <input
