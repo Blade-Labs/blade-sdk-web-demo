@@ -1,11 +1,7 @@
 <template>
   <div class="mt-8 border border-gray-200 rounded-lg">
     <p class="p-4 border-b border-gray-200"><strong>Output</strong></p>
-    <pre v-if="!isLoading" class="bg-gray-100 p-4 overflow-y-auto">
-      <code class="text-sm font-mono text-gray-800">
-        {{ Object.keys(data).length !== 0 ? JSON.stringify(data, null, 2) : data }}
-      </code>
-    </pre>
+    <vue-json-pretty  v-if="!isLoading" :data="data" class="bg-gray-100 p-4 text-sm font-mono text-gray-800" />
 
     <div v-else class="bg-gray-100 p-4 overflow-y-auto">
       <svg class="w-44" version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -26,6 +22,9 @@
 </template>
 
 <script lang="ts" setup>
+  import VueJsonPretty from 'vue-json-pretty'
+  import 'vue-json-pretty/lib/styles.css'
+
   import { defineProps } from 'vue'
 
   defineProps({

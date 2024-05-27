@@ -1,160 +1,184 @@
 <template>
-  <div class="flex gap-4 mb-6 flex-wrap items-end">
-    <div class="flex-grow">
-      <label for="coinSearch" class="block mb-2 text-sm font-medium text-gray-900">Coin Search</label>
-      <input
-        v-model="coinSearch"
-        type="text"
-        id="coinSearch"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-        :disabled="!store.state.isInit"
-      >
-    </div>
+  <AppTabs :tabs="tabs" @selectActiveTab="selectActiveTab" />
 
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="getCoinPrice()"
-    >
-      Get Coin Price
-    </button>
-  </div>
+  <div v-show="activeTab === 'exchange'">
+    <p class="block mb-6 text-sm font-medium text-gray-600">
+      Manages exchange operations such as buying, selling, or swapping tokens.
+    </p>
 
-  <div class="flex gap-4 mb-6 flex-wrap items-end">
-    <div class="flex-grow">
-      <label for="strategy" class="block mb-2 text-sm font-medium text-gray-900">Strategy</label>
+    <div class="flex gap-4 mb-6 flex-wrap items-end">
+      <div class="max-w-sm w-full">
+        <label for="strategy" class="block mb-2 text-sm font-medium text-gray-900">Strategy</label>
 
-      <select
-        v-model="strategy"
-        id="strategy"
-        class="block w-full p-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-        :disabled="!store.state.isInit"
-        @change="changeStrategy()"
-      >
-        <option
-          v-for="item in strategies"
-          :key="item.value"
-          :value="item.value"
+        <select
+          v-model="strategy"
+          id="strategy"
+          class="block w-full p-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+          @change="changeStrategy()"
         >
-          {{ item.name }}
-        </option>
-      </select>
-    </div>
+          <option
+            v-for="item in strategies"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.name }}
+          </option>
+        </select>
+      </div>
 
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="exchangeGetQuotes()"
-    >
-      Exchange Get Quotes
-    </button>
-  </div>
-
-  <div class="flex gap-4 mb-6 items-end">
-    <div class="flex-grow">
-      <label for="source" class="block mb-2 text-sm font-medium text-gray-900">Source</label>
-      <input
-        v-model="source"
-        type="text"
-        id="source"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
+        type="button"
+        @click="exchangeGetQuotes()"
       >
+        Exchange Get Quotes
+      </button>
     </div>
 
-    <div class="flex-grow">
-      <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">Amount</label>
-      <input
-        v-model="amount"
-        type="number"
-        id="amount"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-        :disabled="!store.state.isInit"
-      >
+    <div class="flex gap-4 mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="source" class="block mb-2 text-sm font-medium text-gray-900">Source</label>
+        <input
+          v-model="source"
+          type="text"
+          id="source"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <div class="max-w-sm w-full">
+        <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+        <input
+          v-model="amount"
+          type="number"
+          id="amount"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <div class="max-w-sm w-full">
+        <label for="target" class="block mb-2 text-sm font-medium text-gray-900">Target</label>
+        <input
+          v-model="target"
+          type="text"
+          id="target"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
     </div>
 
-    <div class="flex-grow">
-      <label for="target" class="block mb-2 text-sm font-medium text-gray-900">Target</label>
-      <input
-        v-model="target"
-        type="text"
-        id="target"
-        class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-        :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-        :disabled="!store.state.isInit"
-      >
-    </div>
-  </div>
+    <div class="flex gap-4 mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="service" class="block mb-2 text-sm font-medium text-gray-900">Service</label>
 
+        <select
+          v-model="service"
+          id="service"
+          class="block w-full p-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+          :class="!store.state.isInit || !isSwap ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit || !isSwap"
+          @change="changeStrategy()"
+        >
+          <option
+            v-for="item in services"
+            :key="item"
+            :disabled="item === 'Select Service'"
+            :value="item"
+          >
+            {{ item }}
+          </option>
+        </select>
+      </div>
 
-  <div class="flex gap-4 mb-6 items-end">
-    <div class="flex-grow">
-      <label for="service" class="block mb-2 text-sm font-medium text-gray-900">Service</label>
-
-      <select
-        v-model="service"
-        id="service"
-        class="block w-full p-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-        :class="!store.state.isInit || !isSwap ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
+        :class="!store.state.isInit || !isSwap ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit || !isSwap"
-        @change="changeStrategy()"
+        type="button"
+        @click="swapTokens()"
       >
-        <option
-          v-for="item in services"
-          :key="item"
-          :disabled="item === 'Select Service'"
-          :value="item"
-        >
-          {{ item }}
-        </option>
-      </select>
+        Swap Tokens
+      </button>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit"
+        type="button"
+        @click="getTradeUrl()"
+      >
+        Get Trade Url
+      </button>
     </div>
-
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-      :class="!store.state.isInit || !isSwap ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit || !isSwap"
-      type="button"
-      @click="swapTokens()"
-    >
-      Swap Tokens
-    </button>
   </div>
 
-  <div class="flex justify-end gap-4 flex-wrap">
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="getCoinList()"
-    >
-      Get Coin List
-    </button>
-    <button
-      class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-      :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-      :disabled="!store.state.isInit"
-      type="button"
-      @click="getTradeUrl()"
-    >
-      Get Trade Url
-    </button>
-  </div>
+  <div v-show="activeTab === 'price'">
+    <p class="block mb-6 text-sm font-medium text-gray-600">
+      Provides functionalities to retrieve the list of coins and their prices.
+    </p>
 
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="coinSearch" class="block mb-2 text-sm font-medium text-gray-900">Coin Search</label>
+        <input
+          v-model="coinSearch"
+          type="text"
+          id="coinSearch"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <div class="max-w-sm w-full">
+        <label for="currency" class="block mb-2 text-sm font-medium text-gray-900">Currency</label>
+        <input
+          v-model="currency"
+          type="text"
+          id="currency"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit"
+        type="button"
+        @click="getCoinPrice()"
+      >
+        Get Coin Price
+      </button>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit"
+        type="button"
+        @click="getCoinList()"
+      >
+        Get Coin List
+      </button>
+    </div>
+  </div>
   <AppOutput :data="output" :isLoading="progress" />
 </template>
 
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
+  import AppTabs from '../components/AppTabs.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
@@ -166,6 +190,12 @@
 
   const bladeSDK = BladeService.getInstance()
 
+  const tabs = ref([
+    { name: 'Exchange', value: 'exchange' },
+    { name: 'Price', value: 'price' }
+  ])
+  const activeTab = ref(null)
+
   const output = ref(store.state.output)
   const progress = ref(false)
 
@@ -175,6 +205,7 @@
   const amount = ref(50)
   const target = ref('HBAR')
   const redirectUrl = ref('')
+  const currency = ref('eur')
 
   const isSwap = ref(false)
   const isBuy = ref(false)
@@ -189,6 +220,10 @@
   const coinSearch = ref(demoConfig.coinSearch)
   const accountId = ref(demoConfig.accountId)
   const privateKey = ref(demoConfig.privateKey)
+    
+  const selectActiveTab = (value) => {
+    activeTab.value = value
+  }
 
   const changeStrategy = () => {
     if (strategy.value === 'Buy') {
@@ -228,10 +263,8 @@
   const getCoinPrice = async () => {
     progress.value = true
 
-    const currency = 'uah'
-
     try {
-      output.value = await bladeSDK.getCoinPrice(coinSearch.value, currency)
+      output.value = await bladeSDK.getCoinPrice(coinSearch.value, currency.value)
       
     } catch (error) {
       output.value = error
