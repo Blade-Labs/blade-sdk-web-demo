@@ -35,6 +35,7 @@
         :class="!store.state.isInit || !store.state.isAccount ? 'bg-blue-300 hover:bg-blue-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'"
         :disabled="!store.state.isInit || !store.state.isAccount"
         @click="getAccountInfo()"
+        v-tooltip="'Required: accountId'"
       >
         Get Account Info
       </button>
@@ -45,6 +46,7 @@
         :class="!store.state.isInit || !store.state.isAccount ? 'bg-red-300 hover:bg-red-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'"
         :disabled="!store.state.isInit || !store.state.isAccount"
         @click="deleteAccount()"
+        v-tooltip="'Required: deleteAccountId, deletePrivateKey, transferAccountId, operatorAccountId, operatorPrivateKey'"
       >
         Delete Account
       </button>
@@ -75,6 +77,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="searchAccounts()"
+        v-tooltip="'Required: mnemonicRaw'"
       >
         Search Accounts
       </button>
@@ -122,6 +125,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="stakeToNode()"
+        v-tooltip="'Required: accountId, accountPrivateKey, nodeId'"
       >
         Stake To Node
       </button>
@@ -162,7 +166,7 @@
   ])
   const activeTab = ref(null)
 
-  const selectActiveTab = (value) => {
+  const selectActiveTab = (value: any) => {
     activeTab.value = value
   }
 
@@ -197,7 +201,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.deleteAccount(store.state.tempAccount.accountId, store.state.tempAccount.value.privateKey, accountId.value, accountId.value, demoConfig.privateKey)
+      output.value = await bladeSDK.deleteAccount(store.state.tempAccount.accountId, store.state.tempAccount.privateKey, accountId.value, accountId.value, demoConfig.privateKey)
       store.dispatch('setTempAccount', null)
     } catch (error) {
       output.value = error
@@ -212,7 +216,7 @@
     try {
       output.value = await bladeSDK.getNodeList()
       
-      output.value.nodes.forEach((node) => {
+      output.value.nodes.forEach((node: any) => {
         stakes.value.push({
           name: `${node.node_id}: ${node.description}`,
           value: node.node_id

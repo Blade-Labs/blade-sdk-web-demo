@@ -34,6 +34,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="exchangeGetQuotes()"
+        v-tooltip="'Required: sourceCode, sourceAmount, targetCode, strategy'"
       >
         Exchange Get Quotes
       </button>
@@ -87,7 +88,6 @@
           class="block w-full p-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
           :class="!store.state.isInit || !isSwap ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
           :disabled="!store.state.isInit || !isSwap"
-          @change="changeStrategy()"
         >
           <option
             v-for="item in services"
@@ -106,16 +106,18 @@
         :disabled="!store.state.isInit || !isSwap"
         type="button"
         @click="swapTokens()"
+        v-tooltip="'Required: accountId, accountPrivateKey, sourceCode, sourceAmount, targetCode, slippage, serviceId'"
       >
         Swap Tokens
       </button>
 
       <button
         class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-        :disabled="!store.state.isInit"
+        :class="!store.state.isInit || !isBuy ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !isBuy"
         type="button"
         @click="getTradeUrl()"
+        v-tooltip="'Required: strategy, accountId, sourceCode, sourceAmount, targetCode, slippage, serviceId, redirectUrl'"
       >
         Get Trade Url
       </button>
@@ -158,6 +160,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="getCoinPrice()"
+        v-tooltip="'Required: search, currency'"
       >
         Get Coin Price
       </button>
@@ -182,6 +185,7 @@
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
+  import { CryptoFlowServiceStrategy } from "@bladelabs/blade-sdk.js"
 
   import { ref } from 'vue'
   import { useStore } from 'vuex'
@@ -221,7 +225,7 @@
   const accountId = ref(demoConfig.accountId)
   const privateKey = ref(demoConfig.privateKey)
     
-  const selectActiveTab = (value) => {
+  const selectActiveTab = (value: any) => {
     activeTab.value = value
   }
 
@@ -247,12 +251,28 @@
       isBuy.value = false
     }
   }
+
+  const getStrategyFromValue = (value: any) => {
+      switch (value) {
+        case 'Buy':
+          return CryptoFlowServiceStrategy.BUY
+        case 'Sell':
+          return CryptoFlowServiceStrategy.SELL
+        case 'Swap':
+          return CryptoFlowServiceStrategy.SWAP
+        default:
+          return CryptoFlowServiceStrategy.BUY
+      }
+    }
   
   const getCoinList = async () => {
     progress.value = true
 
     try {
-      output.value = await bladeSDK.getCoinList()
+      const response = await bladeSDK.getCoinList()
+
+      output.value = response.coins.slice(0, 100)
+      
     } catch (error) {
       output.value = error
     }
@@ -265,7 +285,6 @@
 
     try {
       output.value = await bladeSDK.getCoinPrice(coinSearch.value, currency.value)
-      
     } catch (error) {
       output.value = error
     }
@@ -274,13 +293,12 @@
   }
 
   const exchangeGetQuotes = async () => {
-    // Need to get CryptoFlowServiceStrategy
     progress.value = true
 
-    services.value = ['Select Service']
+    services.value = ['Select Service']    
 
     try {
-      output.value = await bladeSDK.exchangeGetQuotes(source.value, amount.value, target.value, strategy.value)
+      output.value = await bladeSDK.exchangeGetQuotes(source.value, amount.value, target.value, getStrategyFromValue(strategy.value))
 
       output.value.quotes.forEach((quote: any)  => {
         services.value.push(quote.service.id)
@@ -315,13 +333,12 @@
   }
 
   const getTradeUrl = async () => {
-    // Need to fix issue with redirectUrl
     progress.value = true
 
     const slippage = 0.5
 
     try {
-      output.value = await bladeSDK.getTradeUrl(strategy.value, accountId.value, source.value, amount.value, target.value, slippage, service.value)
+      output.value = await bladeSDK.getTradeUrl(CryptoFlowServiceStrategy.BUY, accountId.value, source.value, amount.value, target.value, slippage, service.value, redirectUrl.value)
       
     } catch (error) {
       output.value = error

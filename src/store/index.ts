@@ -23,6 +23,10 @@ export default createStore({
     },
     SET_TEMP_ACCOUNT(state, value) {
       state.tempAccount = value
+
+      if (value === null) {
+        state.isAccount = false
+      }
     }
   },
   actions: {

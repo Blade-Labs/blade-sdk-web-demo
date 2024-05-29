@@ -44,18 +44,6 @@
       </div>
 
       <div class="max-w-sm w-full">
-        <label for="contractParams" class="block mb-2 text-sm font-medium text-gray-900">Parameters</label>
-        <input
-          v-model="contractParams"
-          type="text"
-          id="contractParams"
-          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-          :disabled="!store.state.isInit"
-        >
-      </div>
-
-      <div class="max-w-sm w-full">
         <label for="gas" class="block mb-2 text-sm font-medium text-gray-900">Gas</label>
         <input
           v-model="gas"
@@ -73,6 +61,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="contractCallFunction()"
+        v-tooltip="'Required: contractId, functionName, paramsEncoded, accountId, accountPrivateKey, gas, usePaymaster'"
       >
         Contract Call
       </button>
@@ -122,18 +111,6 @@
       </div>
 
       <div class="max-w-sm w-full">
-        <label for="contractParams" class="block mb-2 text-sm font-medium text-gray-900">Parameters</label>
-        <input
-          v-model="contractParams"
-          type="text"
-          id="contractParams"
-          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-          :disabled="!store.state.isInit"
-        >
-      </div>
-
-      <div class="max-w-sm w-full">
         <label for="gas" class="block mb-2 text-sm font-medium text-gray-900">Gas</label>
         <input
           v-model="gas"
@@ -163,6 +140,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="contractCallQueryFunction()"
+        v-tooltip="'Required: contractId, functionName, paramsEncoded, accountId, accountPrivateKey, gas, usePaymaster, resultTypes'"
       >
         Contract Call Query
       </button>
@@ -193,6 +171,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="sign()"
+        v-tooltip="'Required: messageString, privateKey'"
       >
         Sign
       </button>
@@ -202,6 +181,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="signVerify()"
+        v-tooltip="'Required: messageString, signature, publicKey'"
       >
         Sign Verify
       </button>
@@ -217,6 +197,8 @@
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
+  import { ParametersBuilder } from "@bladelabs/blade-sdk.js"
+  import { Buffer } from "buffer"
 
   import { ref } from 'vue'
   import { useStore } from 'vuex'
@@ -233,7 +215,6 @@
   const activeTab = ref(null)
   
   const gas = ref(155000)
-  const contractParams = ref('')
   const returnTypes = ref('string, int32')
   const functionName = ref('set_message')
   const output = ref(store.state.output)
@@ -242,10 +223,11 @@
   const contractId = ref(demoConfig.contractId)
   const accountId = ref(demoConfig.accountId)
   const privateKey = ref(demoConfig.privateKey)
-  const message = ref(demoConfig.message)
+  const publicKey = ref(demoConfig.publicKey)
   const mnemonic = ref(demoConfig.mnemonic)
+  const signedMessage = ref('')
   
-  const selectActiveTab = (value) => {
+  const selectActiveTab = (value: any) => {
     activeTab.value = value
 
     if (value === 'contract function call') {
@@ -258,16 +240,13 @@
   }
 
   const contractCallFunction = async () => {
-    // TODO: Need to add ContractFunctionParameters function
     progress.value = true
 
-    const params = '' // ContractFunctionParameters().addString("${binding.editMnemonicMessageSignature.text} ${System.currentTimeMillis()}")
+    const params = new ParametersBuilder().addString(`${mnemonic.value} ${new Date().getTime()}`)
     const bladePayFee = false
 
     try {
-      output.value = await bladeSDK.contractCallFunction(contractId.value, 'set_message', contractParams.value, accountId.value, privateKey.value, gas.value, bladePayFee)
-      console.log(output.value);
-      
+      output.value = await bladeSDK.contractCallFunction(contractId.value, 'set_message', params, accountId.value, privateKey.value, gas.value, bladePayFee)
     } catch (error) {
       output.value = error
     }
@@ -276,16 +255,14 @@
   }
 
   const contractCallQueryFunction = async () => {
-    // TODO: Need to add ContractFunctionParameters function
     progress.value = true
 
-    const params = '' // ContractFunctionParameters()
     const bladePayFee = false
-
+    const params = new ParametersBuilder()
     const typesArr = returnTypes.value.split(',')
 
     try {
-      output.value = await bladeSDK.contractCallQueryFunction(contractId.value, 'get_message', contractParams.value, accountId.value, privateKey.value, gas.value, bladePayFee, typesArr)
+      output.value = await bladeSDK.contractCallQueryFunction(contractId.value, 'get_message', params, accountId.value, privateKey.value, gas.value, bladePayFee, typesArr)
     } catch (error) {
       output.value = error
     }
@@ -296,10 +273,11 @@
   const sign = async () => {
     progress.value = true
 
-    const encodedString = btoa(mnemonic.value)
+    const encodedString = Buffer.from(mnemonic.value).toString("base64")
 
     try {
       output.value = await bladeSDK.sign(encodedString, privateKey.value)
+      signedMessage.value = output.value.signedMessage
     } catch (error) {
       output.value = error
     }
@@ -308,13 +286,12 @@
   }
 
   const signVerify = async () => {
-    // TODO: Need to check error
     progress.value = true
 
-    const encodedString = btoa(message.value)
+    const encodedString = Buffer.from(mnemonic.value).toString("base64")
 
     try {
-      output.value = await bladeSDK.signVerify(encodedString, mnemonic.value, privateKey.value)
+      output.value = await bladeSDK.signVerify(encodedString, signedMessage.value, publicKey.value)
     } catch (error) {
       output.value = error
     }

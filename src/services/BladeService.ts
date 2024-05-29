@@ -4,10 +4,10 @@ export class BladeService {
   private static instance: BladeSDK;
 
   public static getInstance(): BladeSDK {
-      if (!BladeService.instance) {
-          BladeService.instance = new BladeSDK()
-      }
-  
-      return BladeService.instance
+    if (!BladeService.instance) {
+        BladeService.instance = new BladeSDK()
+    }
+
+    return BladeService.instance
   }
 }

@@ -154,6 +154,7 @@
       :class="store.state.isInit ? 'bg-green-300 hover:bg-green-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
       :disabled="store.state.isInit"
       @click="initBlade()"
+      v-tooltip="'Required: apiKey, network, dAppCode'"
     >
       Init
     </button>

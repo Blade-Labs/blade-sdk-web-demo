@@ -36,6 +36,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="transferHbars()"
+        v-tooltip="'Required: accountId, privateKey, receiver, amount, memo'"
       >
         Transfer Hbars
       </button>
@@ -45,6 +46,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="transferTokens()"
+        v-tooltip="'Required: tokenId, accountId, privateKey, receiver, amount, memo'"
       >
         Transfer Tokens
       </button>
@@ -88,6 +90,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="createToken()"
+        v-tooltip="'Required: treasuryAccountId, supplyPrivateKey, tokenName, tokenSymbol, isNft, keys, decimals, initialSupply, maxSupply'"
       >
         Create Token
       </button>
@@ -117,8 +120,8 @@
       <label
         for="img"
         class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-        :disabled="!store.state.isInit"
+        :class="!store.state.isInit || !isCreate ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !isCreate"
       >Select Image</label>
 
       <button
@@ -127,6 +130,7 @@
         :disabled="!store.state.isInit || !isReadyToMint"
         type="button"
         @click="nftMint()"
+        v-tooltip="'Required: tokenId, accountId, accountPrivateKey, file, metadata, storageConfig'"
       >
         NFT Mint
       </button>
@@ -157,6 +161,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="getBalance()"
+        v-tooltip="'Required: accountId'"
       >
         Get Balance
       </button>
@@ -169,6 +174,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="getTokenInfo()"
+        v-tooltip="'Required: tokenId'"
       >
         Get Token Info
       </button>
@@ -179,6 +185,7 @@
         :disabled="!store.state.isInit || !isMint"
         type="button"
         @click="associateToken()"
+        v-tooltip="'Required: tokenId, accountId, accountPrivateKey'"
       >
         Associate Token
       </button>
@@ -189,6 +196,7 @@
         :disabled="!store.state.isInit || !store.state.isAccount"
         type="button"
         @click="dropTokens()"
+        v-tooltip="'Required: accountId, accountPrivateKey, secretNonce'"
       >
         Drop Tokens
       </button>
@@ -204,6 +212,7 @@
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
+  import { NFTStorageConfig, NFTStorageProvider, KeyRecord, KeyType } from "@bladelabs/blade-sdk.js"
 
   import { ref } from 'vue'
   import { useStore } from 'vuex'
@@ -223,6 +232,7 @@
   const progress = ref(false)
   const isReadyToMint = ref(false)
   const isMint = ref(false)
+  const isCreate = ref(false)
 
   const accountId = ref(demoConfig.accountId)
   const tokenId = ref(demoConfig.tokenId)
@@ -237,7 +247,7 @@
   const memo = ref('Test token transfer from WEB')
   const base64Image = ref('')
 
-  const selectActiveTab = (value) => {
+  const selectActiveTab = (value: any) => {
     activeTab.value = value
   }
 
@@ -278,21 +288,26 @@
   }
 
   const createToken = async () => {
-    // progress.value = true
+    progress.value = true
 
-    // const keys = listOf(
-    //   KeyRecord(Config.privateKey2, KeyType.admin)
-    // )
+    const keys: KeyRecord[] = [
+      {type: KeyType.admin, privateKey: privateKey2.value}
+    ]
 
-    // try {
-    //   console.log(accountId.value);
-      
-    //   output.value = await bladeSDK.createToken(accountId.value, privateKey.value, tokenName.value, tokenSymbol.value, true, )
-    // } catch (error) {
-    //   output.value = error
-    // }
+    const isNft = true
+    const decimals = 0
+    const initialSupply = 0
+    const maxSupply = 250
 
-    // progress.value = false
+    try {
+      output.value = await bladeSDK.createToken(accountId.value, privateKey.value, tokenName.value, tokenSymbol.value, isNft, keys, decimals, initialSupply, maxSupply)
+      tokenId.value = output.value.tokenId
+      isCreate.value = true
+    } catch (error) {
+      output.value = error
+    }
+
+    progress.value = false
   }
 
   const associateToken = async () => {
@@ -322,7 +337,6 @@
   }
 
   const nftMint = async () => {
-    // Need to finish it
     progress.value = true
 
     const metaData = {
@@ -333,16 +347,13 @@
       speed: 10
     }
 
-    console.log(base64Image.value);
-    
-
-    // storageConfig = NFTStorageConfig(
-    //     provider = NFTStorageProvider.nftStorage,
-    //     apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZFNzY0ZmM0ZkZFOEJhNjdCNjc1NDk1Q2NEREFiYjk0NTE4Njk0QjYiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcwNDQ2NDUxODQ2MiwibmFtZSI6IkJsYWRlU0RLLXRlc3RrZXkifQ.t1wCiEuiTvcYOwssdZgiYaug4aF8ZrvMBdkTASojWGU"
-    // ),
+    const storageConfig: NFTStorageConfig = {
+      provider: NFTStorageProvider.nftStorage,
+      apiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZFNzY0ZmM0ZkZFOEJhNjdCNjc1NDk1Q2NEREFiYjk0NTE4Njk0QjYiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcwNDQ2NDUxODQ2MiwibmFtZSI6IkJsYWRlU0RLLXRlc3RrZXkifQ.t1wCiEuiTvcYOwssdZgiYaug4aF8ZrvMBdkTASojWGU"
+    }
 
     try {
-      output.value = await bladeSDK.nftMint(accountId.value, privateKey.value, base64Image.value, metaData)
+      output.value = await bladeSDK.nftMint(tokenId.value, accountId.value, privateKey.value, base64Image.value, metaData, storageConfig)
 
       isMint.value = true
     } catch (error) {
