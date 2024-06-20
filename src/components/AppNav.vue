@@ -40,7 +40,6 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const isDesktop = ref(false)
 const isMenuActive = ref(false)
-const mobileMenuOpen = ref(false)
 const menuItems = ref([
   {
     label: 'Init',
