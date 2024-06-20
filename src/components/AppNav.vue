@@ -13,18 +13,21 @@
         class="w-full md:block md:w-auto"
         :class="{ 'hidden': !isMenuActive }"
       >
-        <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
+        <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white md:items-center">
           <li
             v-for="item in menuItems"
             :key="item.label"
           >
             <RouterLink
-              class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
-              :class="{ 'text-white bg-blue-700 md:bg-transparent md:text-blue-700 md:p-0': $route.path === item.url }"
+              class="block py-2 px-3 rounded text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-indigo-600 md:p-0"
+              :class="{ 'text-white bg-indigo-500 md:bg-transparent md:text-indigo-500 md:p-0': $route.path === item.url }"
               :to="item.url"
             >
               {{ item.label }}
             </RouterLink>
+          </li>
+          <li>
+            <a href="https://bladelabs.io/contact-us/" target="_blank" class="max-h-10 text-white bg-indigo-500 hover:bg-indigo-600 focus:ring-4 focus:ring-indigo-300 font-medium rounded-full text-sm px-5 py-2.5 whitespace-nowrap">Contact us</a>
           </li>
         </ul>
       </div>

@@ -20,24 +20,25 @@
       </div>
 
       <button
-        class="max-h-10 text-white focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-        :class="!store.state.isInit ? 'bg-green-300 hover:bg-green-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        type="button"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
+        @click="getAccountInfo()"
+      >
+        Get Account Info
+      </button>
+    </div>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit || store.state.isAccount ? 'bg-green-300 hover:bg-green-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
+        :disabled="!store.state.isInit || store.state.isAccount"
         type="button"
         @click="createAccount()"
       >
         Create Account
-      </button>
-
-      <button
-        class="max-h-10 text-white focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-        type="button"
-        :class="!store.state.isInit || !store.state.isAccount ? 'bg-blue-300 hover:bg-blue-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'"
-        :disabled="!store.state.isInit || !store.state.isAccount"
-        @click="getAccountInfo()"
-        v-tooltip="'Required: accountId'"
-      >
-        Get Account Info
       </button>
 
       <button
@@ -46,9 +47,8 @@
         :class="!store.state.isInit || !store.state.isAccount ? 'bg-red-300 hover:bg-red-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'"
         :disabled="!store.state.isInit || !store.state.isAccount"
         @click="deleteAccount()"
-        v-tooltip="'Required: deleteAccountId, deletePrivateKey, transferAccountId, operatorAccountId, operatorPrivateKey'"
       >
-        Delete Account
+        Delete Account {{ store?.state?.tempAccount?.accountId ? `(${store?.state?.tempAccount?.accountId})` : '' }}
       </button>
     </div>
   </div>
@@ -77,7 +77,6 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="searchAccounts()"
-        v-tooltip="'Required: mnemonicRaw'"
       >
         Search Accounts
       </button>
@@ -90,6 +89,18 @@
     </p>
 
     <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
+        <input
+          v-model="accountId"
+          type="text"
+          id="accountId"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
       <div class="max-w-sm w-full">
         <label for="stake" class="block mb-2 text-sm font-medium text-gray-900">Select a node</label>
 
@@ -115,22 +126,27 @@
         :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
         type="button"
-        @click="getNodeList()"
-      >
-        Get Node List
-      </button>
-      <button
-        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
-        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-        :disabled="!store.state.isInit"
-        type="button"
         @click="stakeToNode()"
-        v-tooltip="'Required: accountId, accountPrivateKey, nodeId'"
+        v-tooltip="'Stake/unstake account'"
       >
         Stake To Node
       </button>
     </div>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <button
+          class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap	"
+          :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+          :disabled="!store.state.isInit"
+          type="button"
+          @click="getNodeList()"
+        >
+          Get Node List
+        </button>
+    </div>
   </div>
+
+  <AppLinksList :links="links" />
 
   <AppOutput :data="output" :isLoading="progress" />
 </template>
@@ -138,11 +154,12 @@
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
   import AppTabs from '../components/AppTabs.vue'
+  import AppLinksList from '../components/AppLinksList.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
 
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useStore } from 'vuex'
 
   const store = useStore()
@@ -161,13 +178,24 @@
   const stake = ref('-1')
   const tabs = ref([
     { name: 'Create', value: 'create' },
-    { name: 'Import', value: 'import' },
+    { name: 'Mnemonic or Private key', value: 'import' },
     { name: 'Stake', value: 'stake' }
   ])
   const activeTab = ref(null)
 
+  const links = ref([
+    { url: 'getaccountinfo', name: 'Get Account Info' },
+    { url: 'createaccount', name: 'Create Account' },
+    { url: 'deleteaccount', name: 'Delete Account' },
+    { url: 'searchaccounts', name: 'Search Accounts' },
+    { url: 'staketonode', name: 'Stake To Node' },
+    { url: 'getnodelist', name: 'Get Node List' },
+  ])
+
   const selectActiveTab = (value: any) => {
     activeTab.value = value
+
+    getInfo()
   }
 
   const createAccount = async () => {
@@ -175,6 +203,8 @@
 
     try {
       output.value = await bladeSDK.createAccount()
+
+      accountId.value = output.value.accountId
 
       store.dispatch('setTempAccount', output.value)
       store.dispatch('setAccount')
@@ -201,7 +231,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.deleteAccount(store.state.tempAccount.accountId, store.state.tempAccount.privateKey, accountId.value, accountId.value, demoConfig.privateKey)
+      output.value = await bladeSDK.deleteAccount(store.state.tempAccount.accountId, store.state.tempAccount.privateKey, demoConfig.accountId, demoConfig.accountId, demoConfig.privateKey)
       store.dispatch('setTempAccount', null)
     } catch (error) {
       output.value = error
@@ -215,13 +245,6 @@
 
     try {
       output.value = await bladeSDK.getNodeList()
-      
-      output.value.nodes.forEach((node: any) => {
-        stakes.value.push({
-          name: `${node.node_id}: ${node.description}`,
-          value: node.node_id
-        })
-      })
     } catch (error) {
       output.value = error
     }
@@ -252,4 +275,31 @@
 
     progress.value = false
   }
+
+  const getInfo = async () => {
+    progress.value = true
+
+    try {
+      output.value = await bladeSDK.getInfo()
+    } catch (error) {
+      output.value = error
+    }
+
+    progress.value = false
+  }
+
+  onMounted(async() => {
+    getInfo()
+
+    if (store.state.isInit) {
+      const nodeList = await bladeSDK.getNodeList()
+  
+      nodeList.nodes.forEach((node: any) => {
+        stakes.value.push({
+          name: `${node.node_id}: ${node.description}`,
+          value: node.node_id
+        })
+      })
+    }
+  })
 </script>

@@ -13,9 +13,8 @@
           v-model="accountId"
           type="text"
           id="accountId"
-          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-          :disabled="!store.state.isInit"
+          class="text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          disabled
         >
       </div>
 
@@ -61,7 +60,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="contractCallFunction()"
-        v-tooltip="'Required: contractId, functionName, paramsEncoded, accountId, accountPrivateKey, gas, usePaymaster'"
+        v-tooltip="'Call contract function. Directly or via BladeAPI using paymaster account (fee will be paid by Paymaster account), depending on your dApp configuration.'"
       >
         Contract Call
       </button>
@@ -80,9 +79,8 @@
           v-model="accountId"
           type="text"
           id="accountId"
-          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-          :disabled="!store.state.isInit"
+          class="text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          disabled
         >
       </div>
 
@@ -140,7 +138,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="contractCallQueryFunction()"
-        v-tooltip="'Required: contractId, functionName, paramsEncoded, accountId, accountPrivateKey, gas, usePaymaster, resultTypes'"
+        v-tooltip="'Call query on contract function. Similar to contractCallFunction can be called directly or via BladeAPI using Paymaster account.'"
       >
         Contract Call Query
       </button>
@@ -154,11 +152,11 @@
 
     <div class="flex gap-4 flex-wrap mb-6 items-end">
       <div class="max-w-sm w-full">
-        <label for="mnemonic" class="block mb-2 text-sm font-medium text-gray-900">Mnemonic / Message / Signature</label>
+        <label for="message" class="block mb-2 text-sm font-medium text-gray-900">Message</label>
         <input
-          v-model="mnemonic"
+          v-model="message"
           type="text"
-          id="mnemonic"
+          id="message"
           class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
           :disabled="!store.state.isInit"
@@ -171,22 +169,39 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="sign()"
-        v-tooltip="'Required: messageString, privateKey'"
+        v-tooltip="'Sign base64-encoded message with private key. Returns hex-encoded signature'"
       >
         Sign
       </button>
+    </div>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
+        <label for="signedMessage" class="block mb-2 text-sm font-medium text-gray-900">Signature</label>
+        <input
+          v-model="signedMessage"
+          type="text"
+          id="signedMessage"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
       <button
         class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
         :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
         type="button"
         @click="signVerify()"
-        v-tooltip="'Required: messageString, signature, publicKey'"
+        v-tooltip="'Verify message signature by public key'"
       >
-        Sign Verify
+        Verify
       </button>
     </div>
   </div>
+
+  <AppLinksList :links="links" />
 
   <AppOutput :data="output" :isLoading="progress" />
 </template>
@@ -194,13 +209,14 @@
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
   import AppTabs from '../components/AppTabs.vue'
+  import AppLinksList from '../components/AppLinksList.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
   import { ParametersBuilder } from "@bladelabs/blade-sdk.js"
   import { Buffer } from "buffer"
 
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useStore } from 'vuex'
 
   const store = useStore()
@@ -224,8 +240,15 @@
   const accountId = ref(demoConfig.accountId)
   const privateKey = ref(demoConfig.privateKey)
   const publicKey = ref(demoConfig.publicKey)
-  const mnemonic = ref(demoConfig.mnemonic)
+  const message = ref(demoConfig.message)
   const signedMessage = ref('')
+
+  const links = ref([
+    { url: 'contractcallfunction', name: 'Contract Call' },
+    { url: 'contractcallqueryfunction', name: 'Contract Call Query' },
+    { url: 'sign', name: 'Sign' },
+    { url: 'signverify', name: 'Verify' },
+  ])
   
   const selectActiveTab = (value: any) => {
     activeTab.value = value
@@ -237,12 +260,14 @@
     if (value === 'contract function call query') {
       functionName.value = 'get_message'
     }
+
+    getInfo()
   }
 
   const contractCallFunction = async () => {
     progress.value = true
 
-    const params = new ParametersBuilder().addString(`${mnemonic.value} ${new Date().getTime()}`)
+    const params = new ParametersBuilder().addString(`${message.value} ${new Date().getTime()}`)
     const bladePayFee = false
 
     try {
@@ -259,7 +284,7 @@
 
     const bladePayFee = false
     const params = new ParametersBuilder()
-    const typesArr = returnTypes.value.split(',')
+    const typesArr = returnTypes.value.split(', ')
 
     try {
       output.value = await bladeSDK.contractCallQueryFunction(contractId.value, 'get_message', params, accountId.value, privateKey.value, gas.value, bladePayFee, typesArr)
@@ -273,7 +298,7 @@
   const sign = async () => {
     progress.value = true
 
-    const encodedString = Buffer.from(mnemonic.value).toString("base64")
+    const encodedString = Buffer.from(message.value).toString("base64")
 
     try {
       output.value = await bladeSDK.sign(encodedString, privateKey.value)
@@ -288,7 +313,7 @@
   const signVerify = async () => {
     progress.value = true
 
-    const encodedString = Buffer.from(mnemonic.value).toString("base64")
+    const encodedString = Buffer.from(message.value).toString("base64")
 
     try {
       output.value = await bladeSDK.signVerify(encodedString, signedMessage.value, publicKey.value)
@@ -298,4 +323,20 @@
 
     progress.value = false
   }
+
+  const getInfo = async () => {
+    progress.value = true
+
+    try {
+      output.value = await bladeSDK.getInfo()
+    } catch (error) {
+      output.value = error
+    }
+
+    progress.value = false
+  }
+
+  onMounted(() => {
+    getInfo()
+  })
 </script>

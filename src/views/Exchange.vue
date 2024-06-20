@@ -34,7 +34,7 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="exchangeGetQuotes()"
-        v-tooltip="'Required: sourceCode, sourceAmount, targetCode, strategy'"
+        v-tooltip="'Get quotes from different services for buy, sell or swap'"
       >
         Exchange Get Quotes
       </button>
@@ -106,7 +106,6 @@
         :disabled="!store.state.isInit || !isSwap"
         type="button"
         @click="swapTokens()"
-        v-tooltip="'Required: accountId, accountPrivateKey, sourceCode, sourceAmount, targetCode, slippage, serviceId'"
       >
         Swap Tokens
       </button>
@@ -117,7 +116,7 @@
         :disabled="!store.state.isInit || !isBuy"
         type="button"
         @click="getTradeUrl()"
-        v-tooltip="'Required: strategy, accountId, sourceCode, sourceAmount, targetCode, slippage, serviceId, redirectUrl'"
+        v-tooltip="'Get configured url to buy or sell tokens or fiat'"
       >
         Get Trade Url
       </button>
@@ -160,7 +159,6 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="getCoinPrice()"
-        v-tooltip="'Required: search, currency'"
       >
         Get Coin Price
       </button>
@@ -176,18 +174,22 @@
       </button>
     </div>
   </div>
+
+  <AppLinksList :links="links" />
+
   <AppOutput :data="output" :isLoading="progress" />
 </template>
 
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
   import AppTabs from '../components/AppTabs.vue'
+  import AppLinksList from '../components/AppLinksList.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
   import { CryptoFlowServiceStrategy } from "@bladelabs/blade-sdk.js"
 
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useStore } from 'vuex'
 
   const store = useStore()
@@ -224,9 +226,19 @@
   const coinSearch = ref(demoConfig.coinSearch)
   const accountId = ref(demoConfig.accountId)
   const privateKey = ref(demoConfig.privateKey)
+
+  const links = ref([
+    { url: 'exchangegetquotes', name: 'Exchange Get Quotes' },
+    { url: 'swaptokens', name: 'Swap Tokens' },
+    { url: 'gettradeurl', name: 'Get Trade Url' },
+    { url: 'getcoinprice', name: 'Get Coin Price' },
+    { url: 'getcoinlist', name: 'Get Coin List' },
+  ])
     
   const selectActiveTab = (value: any) => {
     activeTab.value = value
+
+    getInfo()
   }
 
   const changeStrategy = () => {
@@ -346,4 +358,20 @@
 
     progress.value = false
   }
+
+  const getInfo = async () => {
+    progress.value = true
+
+    try {
+      output.value = await bladeSDK.getInfo()
+    } catch (error) {
+      output.value = error
+    }
+
+    progress.value = false
+  }
+
+  onMounted(() => {
+    getInfo()
+  })
 </script>
