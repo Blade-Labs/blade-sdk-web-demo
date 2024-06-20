@@ -23,14 +23,22 @@
 </template>
 
 <script lang="ts" setup>
-  import { defineProps } from 'vue'
+  import { defineProps, PropType } from 'vue'
+
+  interface Link {
+    url: string;
+    name: string;
+  }
 
   defineProps({
     title: {
       type: String,
       default: 'Reach out more in documentation:'
     },
-    links: Array,
+    links: {
+      type: Array as PropType<Link[]>,
+      required: true,
+    },
   })
 </script>
 
