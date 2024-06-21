@@ -8,6 +8,30 @@
 
     <div class="flex gap-4 flex-wrap mb-6 items-end">
       <div class="max-w-sm w-full">
+        <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
+        <input
+          v-model="accountId"
+          type="text"
+          id="accountId"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <button
+        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit"
+        type="button"
+        @click="getBalance()"
+      >
+        Get Balance
+      </button>
+    </div>
+
+    <div class="flex gap-4 flex-wrap mb-6 items-end">
+      <div class="max-w-sm w-full">
         <label for="receiver" class="block mb-2 text-sm font-medium text-gray-900">Receiver</label>
         <input
           v-model="receiver"
@@ -36,7 +60,6 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="transferHbars()"
-        v-tooltip="'Required: accountId, privateKey, receiver, amount, memo'"
       >
         Transfer Hbars
       </button>
@@ -46,7 +69,6 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="transferTokens()"
-        v-tooltip="'Required: tokenId, accountId, privateKey, receiver, amount, memo'"
       >
         Transfer Tokens
       </button>
@@ -90,7 +112,6 @@
         :disabled="!store.state.isInit"
         type="button"
         @click="createToken()"
-        v-tooltip="'Required: treasuryAccountId, supplyPrivateKey, tokenName, tokenSymbol, isNft, keys, decimals, initialSupply, maxSupply'"
       >
         Create Token
       </button>
@@ -130,7 +151,6 @@
         :disabled="!store.state.isInit || !isReadyToMint"
         type="button"
         @click="nftMint()"
-        v-tooltip="'Required: tokenId, accountId, accountPrivateKey, file, metadata, storageConfig'"
       >
         NFT Mint
       </button>
@@ -144,11 +164,11 @@
 
     <div class="flex gap-4 flex-wrap mb-6 items-end">
       <div class="max-w-sm w-full">
-        <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
+        <label for="tokenId2" class="block mb-2 text-sm font-medium text-gray-900">Token Id</label>
         <input
-          v-model="accountId"
+          v-model="tokenId2"
           type="text"
-          id="accountId"
+          id="tokenId2"
           class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
           :disabled="!store.state.isInit"
@@ -160,32 +180,31 @@
         :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
         :disabled="!store.state.isInit"
         type="button"
-        @click="getBalance()"
-        v-tooltip="'Required: accountId'"
-      >
-        Get Balance
-      </button>
-    </div>
-
-    <div class="flex gap-4 flex-wrap mb-6 items-end">
-      <button
-        class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-        :class="!store.state.isInit ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-        :disabled="!store.state.isInit"
-        type="button"
         @click="getTokenInfo()"
-        v-tooltip="'Required: tokenId'"
       >
         Get Token Info
       </button>
+    </div>
 
+    <div class="flex gap-4 flex-wrap mb-7 items-end">
+      <div class="max-w-sm w-full">
+        <label for="tempAccountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
+        <input
+          v-model="tempAccountId"
+          type="text"
+          id="tempAccountId"
+          class="text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          disabled
+        >
+      </div>
+      
       <button
         class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-        :class="!store.state.isInit || !isMint ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-        :disabled="!store.state.isInit || !isMint"
+        :class="!store.state.isInit || !store.state.isAccount ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !store.state.isAccount"
         type="button"
         @click="associateToken()"
-        v-tooltip="'Required: tokenId, accountId, accountPrivateKey'"
+        v-tooltip="'Need to create account'"
       >
         Associate Token
       </button>
@@ -196,12 +215,14 @@
         :disabled="!store.state.isInit || !store.state.isAccount"
         type="button"
         @click="dropTokens()"
-        v-tooltip="'Required: accountId, accountPrivateKey, secretNonce'"
+        v-tooltip="'Need to create account'"
       >
         Drop Tokens
       </button>
     </div>
   </div>
+
+  <AppLinksList :links="links" />
 
   <AppOutput :data="output" :isLoading="progress" />
 </template>
@@ -209,12 +230,13 @@
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
   import AppTabs from '../components/AppTabs.vue'
+  import AppLinksList from '../components/AppLinksList.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { BladeService } from '../services/BladeService'
   import { NFTStorageConfig, NFTStorageProvider, KeyRecord, KeyType } from "@bladelabs/blade-sdk.js"
 
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useStore } from 'vuex'
 
   const store = useStore()
@@ -231,24 +253,37 @@
   const output = ref(store.state.output)
   const progress = ref(false)
   const isReadyToMint = ref(false)
-  const isMint = ref(false)
   const isCreate = ref(false)
 
+  const tempAccountId = ref(store.state.tempAccount?.accountId)
   const accountId = ref(demoConfig.accountId)
   const tokenId = ref(demoConfig.tokenId)
+  const tokenId2 = ref(demoConfig.tokenId2)
   const privateKey = ref(demoConfig.privateKey)
   const receiver = ref(demoConfig.accountId2)
   const tokenName = ref(demoConfig.tokenName)
   const tokenSymbol = ref(demoConfig.tokenSymbol)
-  const privateKey2Account = ref(demoConfig.privateKey2Account)
   const privateKey2 = ref(demoConfig.privateKey2)
   const nonce = ref(demoConfig.nonce)
   const amount = ref(1)
   const memo = ref('Test token transfer from WEB')
   const base64Image = ref('')
 
+  const links = ref([
+    { url: 'getbalance', name: 'Get Balance' },
+    { url: 'transferhbars', name: 'Transfer Hbars' },
+    { url: 'transfertokens', name: 'Transfer Tokens' },
+    { url: 'createtoken', name: 'Create Token' },
+    { url: 'nftmint', name: 'NFT Mint' },
+    { url: 'gettokeninfo', name: 'Get Token Info' },
+    { url: 'associatetoken', name: 'Associate Token' },
+    { url: 'droptokens', name: 'Drop tokens' },
+  ])
+
   const selectActiveTab = (value: any) => {
     activeTab.value = value
+
+    getInfo()
   }
 
   const getBalance = async () => {
@@ -267,7 +302,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.transferHbars(accountId.value, privateKey.value, receiver.value, String(amount.value), memo.value)
+      output.value = await bladeSDK.transferHbars(demoConfig.accountId, privateKey.value, receiver.value, String(amount.value), memo.value)
     } catch (error) {
       output.value = error
     }
@@ -279,7 +314,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.transferTokens(tokenId.value, accountId.value, privateKey.value, receiver.value, String(amount.value), memo.value)
+      output.value = await bladeSDK.transferTokens(tokenId.value, demoConfig.accountId, privateKey.value, receiver.value, String(amount.value), memo.value)
     } catch (error) {
       output.value = error
     }
@@ -314,7 +349,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.associateToken(tokenId.value, privateKey2Account.value, privateKey2.value)
+      output.value = await bladeSDK.associateToken(tokenId2.value, store.state.tempAccount?.accountId, store.state.tempAccount?.privateKey)
     } catch (error) {
       output.value = error
     }
@@ -354,8 +389,6 @@
 
     try {
       output.value = await bladeSDK.nftMint(tokenId.value, accountId.value, privateKey.value, base64Image.value, metaData, storageConfig)
-
-      isMint.value = true
     } catch (error) {
       output.value = error
     }
@@ -386,4 +419,20 @@
 
     progress.value = false
   }
+
+  const getInfo = async () => {
+    progress.value = true
+
+    try {
+      output.value = await bladeSDK.getInfo()
+    } catch (error) {
+      output.value = error
+    }
+
+    progress.value = false
+  }
+
+  onMounted(() => {
+    getInfo()
+  })
 </script>

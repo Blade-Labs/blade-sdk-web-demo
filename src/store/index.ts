@@ -17,10 +17,6 @@ export default createStore({
     SET_ACCOUNT(state) {
       state.isAccount = true
     },
-    STOP_BLADE(state) {
-      state.isInit = false
-      state.isAccount = false
-    },
     SET_TEMP_ACCOUNT(state, value) {
       state.tempAccount = value
 
@@ -38,9 +34,6 @@ export default createStore({
     },
     setTempAccount({ commit }, value) {
       commit('SET_TEMP_ACCOUNT', value)
-    },
-    stopBlade({ commit }) {
-      commit('STOP_BLADE')
     }
   },
   modules: {

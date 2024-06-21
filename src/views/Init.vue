@@ -147,40 +147,33 @@
     </div>
   </div>
 
-  <div class="flex justify-end flex-wrap gap-4">
+  <div class="flex justify-end flex-wrap gap-4 mb-6">
     <button
       type="button"
       class="text-white focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
       :class="store.state.isInit ? 'bg-green-300 hover:bg-green-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
       :disabled="store.state.isInit"
       @click="initBlade()"
-      v-tooltip="'Required: apiKey, network, dAppCode'"
     >
       Init
     </button>
     <button
-      class="text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
+      class="text-white bg-indigo-500 hover:bg-indigo-600 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
       type="button"
       @click="getInfo()"
     >
       Get Info
     </button>
-    <button
-      class="text-white font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-      type="button"
-      :class="!store.state.isInit ? 'bg-red-300 hover:bg-red-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'"
-      :disabled="!store.state.isInit"
-      @click="stopBlade()"
-    >
-      Stop
-    </button>
   </div>
+
+  <AppLinksList :links="links" />
 
   <AppOutput :data="output" :isLoading="progress" />
 </template>
 
 <script lang="ts" setup>
   import AppOutput from '../components/AppOutput.vue'
+  import AppLinksList from '../components/AppLinksList.vue'
 
   import { demoConfig } from '../config/demoConfig'
   import { SdkEnvironment } from '@bladelabs/blade-sdk.js'
@@ -217,6 +210,11 @@
     { name: 'Prod', value: SdkEnvironment.Prod },
   ])
 
+  const links = ref([
+    { url: 'init', name: 'Init' },
+    { url: 'getinfo', name: 'Get Info' }
+  ])
+
   const initBlade = async () => {
     progress.value = true
 
@@ -228,15 +226,6 @@
       output.value = error
     }
   
-    progress.value = false
-  }
-
-  const stopBlade = async () => {
-    progress.value = true
-
-    output.value = 'Blade stopped'
-    store.dispatch('stopBlade')
-
     progress.value = false
   }
 
