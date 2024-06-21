@@ -164,11 +164,11 @@
 
     <div class="flex gap-4 flex-wrap mb-6 items-end">
       <div class="max-w-sm w-full">
-        <label for="tokenId" class="block mb-2 text-sm font-medium text-gray-900">Token Id</label>
+        <label for="tokenId2" class="block mb-2 text-sm font-medium text-gray-900">Token Id</label>
         <input
-          v-model="tokenId"
+          v-model="tokenId2"
           type="text"
-          id="tokenId"
+          id="tokenId2"
           class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
           :disabled="!store.state.isInit"
@@ -204,7 +204,7 @@
         :disabled="!store.state.isInit || !store.state.isAccount"
         type="button"
         @click="associateToken()"
-        v-tooltip="'Need to mint NFT and create account'"
+        v-tooltip="'Need to create account'"
       >
         Associate Token
       </button>
@@ -258,6 +258,7 @@
   const tempAccountId = ref(store.state.tempAccount?.accountId)
   const accountId = ref(demoConfig.accountId)
   const tokenId = ref(demoConfig.tokenId)
+  const tokenId2 = ref(demoConfig.tokenId2)
   const privateKey = ref(demoConfig.privateKey)
   const receiver = ref(demoConfig.accountId2)
   const tokenName = ref(demoConfig.tokenName)
@@ -348,7 +349,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.associateToken(tokenId.value, store.state.tempAccount?.accountId, store.state.tempAccount?.privateKey)
+      output.value = await bladeSDK.associateToken(tokenId2.value, store.state.tempAccount?.accountId, store.state.tempAccount?.privateKey)
     } catch (error) {
       output.value = error
     }
