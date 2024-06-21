@@ -302,7 +302,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.transferHbars(accountId.value, privateKey.value, receiver.value, String(amount.value), memo.value)
+      output.value = await bladeSDK.transferHbars(demoConfig.accountId, privateKey.value, receiver.value, String(amount.value), memo.value)
     } catch (error) {
       output.value = error
     }
@@ -314,7 +314,7 @@
     progress.value = true
 
     try {
-      output.value = await bladeSDK.transferTokens(tokenId.value, accountId.value, privateKey.value, receiver.value, String(amount.value), memo.value)
+      output.value = await bladeSDK.transferTokens(tokenId.value, demoConfig.accountId, privateKey.value, receiver.value, String(amount.value), memo.value)
     } catch (error) {
       output.value = error
     }
