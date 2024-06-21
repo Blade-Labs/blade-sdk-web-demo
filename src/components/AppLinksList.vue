@@ -8,7 +8,7 @@
         :key="index"
       >
         <a
-          :href="`https://docs.bladelabs.io/docs#${link.url}`"
+          :href="`https://docs.bladelabs.io/docs/v/web-app-sdk-for-browser-based-apps/usage#${link.url}`"
           target="_blank"
           class="text-indigo-500 font-medium flex items-center mb-1 hover:underline"
           rel="noopener noreferrer"
