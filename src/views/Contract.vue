@@ -43,6 +43,18 @@
       </div>
 
       <div class="max-w-sm w-full">
+        <label for="message" class="block mb-2 text-sm font-medium text-gray-900">Message</label>
+        <input
+          v-model="message"
+          type="text"
+          id="message"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
+          :disabled="!store.state.isInit"
+        >
+      </div>
+
+      <div class="max-w-sm w-full">
         <label for="gas" class="block mb-2 text-sm font-medium text-gray-900">Gas</label>
         <input
           v-model="gas"

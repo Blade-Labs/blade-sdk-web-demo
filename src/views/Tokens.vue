@@ -200,8 +200,8 @@
       
       <button
         class="max-h-10 text-white focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 whitespace-nowrap"
-        :class="!store.state.isInit || !isMint || !store.state.isAccount ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
-        :disabled="!store.state.isInit || !isMint || !store.state.isAccount"
+        :class="!store.state.isInit || !store.state.isAccount ? 'bg-indigo-300 hover:bg-indigo-500 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'"
+        :disabled="!store.state.isInit || !store.state.isAccount"
         type="button"
         @click="associateToken()"
         v-tooltip="'Need to mint NFT and create account'"
@@ -253,7 +253,6 @@
   const output = ref(store.state.output)
   const progress = ref(false)
   const isReadyToMint = ref(false)
-  const isMint = ref(false)
   const isCreate = ref(false)
 
   const tempAccountId = ref(store.state.tempAccount?.accountId)
@@ -389,8 +388,6 @@
 
     try {
       output.value = await bladeSDK.nftMint(tokenId.value, accountId.value, privateKey.value, base64Image.value, metaData, storageConfig)
-
-      isMint.value = true
     } catch (error) {
       output.value = error
     }

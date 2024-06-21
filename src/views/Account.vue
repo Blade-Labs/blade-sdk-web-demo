@@ -8,11 +8,11 @@
 
     <div class="flex gap-4 flex-wrap mb-6 items-end">
       <div class="max-w-sm w-full">
-        <label for="accountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
+        <label for="tempAccountId" class="block mb-2 text-sm font-medium text-gray-900">Account Id</label>
         <input
-          v-model="accountId"
+          v-model="tempAccountId"
           type="text"
-          id="accountId"
+          id="tempAccountId"
           class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
           :disabled="!store.state.isInit"
@@ -95,9 +95,8 @@
           v-model="accountId"
           type="text"
           id="accountId"
-          class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          :class="!store.state.isInit ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900'"
-          :disabled="!store.state.isInit"
+          class="text-gray-400 cursor-not-allowed bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+          disabled
         >
       </div>
 
@@ -170,6 +169,7 @@
   const progress = ref(false)
 
   const accountId = ref(demoConfig.accountId)
+  const tempAccountId = ref(demoConfig.accountId)
   const mnemonic = ref(demoConfig.mnemonic)
 
   const stakes = ref([
@@ -204,7 +204,7 @@
     try {
       output.value = await bladeSDK.createAccount()
 
-      accountId.value = output.value.accountId
+      tempAccountId.value = output.value.accountId
 
       store.dispatch('setTempAccount', output.value)
       store.dispatch('setAccount')
@@ -300,6 +300,10 @@
           value: node.node_id
         })
       })
+
+      const accountInfo = await bladeSDK.getAccountInfo(accountId.value)
+
+      stake.value = String(accountInfo?.stakingInfo?.stakedNodeId)
     }
   })
 </script>
