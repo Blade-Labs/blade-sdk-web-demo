@@ -8,7 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@bladelabs/blade-sdk.js": "^0.6.27",
+    "@bladelabs/blade-sdk.js": "^0.6.30",
     "autoprefixer": "^9.8.8",
     "floating-vue": "^5.2.2",
     "postcss": "^8.4.31",
